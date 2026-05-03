@@ -30,11 +30,13 @@ const OPENCLAW_CLOSE_REASONS: readonly RepositoryCloseReason[] = [
   "stale_insufficient_info",
 ];
 
-export const DEFAULT_TARGET_REPO = "openclaw/openclaw";
+export const OPENCLAW_TARGET_REPO = "openclaw/openclaw";
+export const KEITARO_OPENCLAW_OPS_TARGET_REPO = "Keitarooooo/openclaw-workspace-backup";
+export const DEFAULT_TARGET_REPO = KEITARO_OPENCLAW_OPS_TARGET_REPO;
 
 export const REPOSITORY_PROFILES: readonly RepositoryProfile[] = [
   {
-    targetRepo: DEFAULT_TARGET_REPO,
+    targetRepo: OPENCLAW_TARGET_REPO,
     slug: "openclaw-openclaw",
     displayName: "OpenClaw",
     checkoutDir: "openclaw",
@@ -70,6 +72,18 @@ export const REPOSITORY_PROFILES: readonly RepositoryProfile[] = [
     applyCloseRules: {
       issue: [],
       pull_request: ["implemented_on_main"],
+    },
+  },
+  {
+    targetRepo: KEITARO_OPENCLAW_OPS_TARGET_REPO,
+    slug: "keitarooooo-openclaw-workspace-backup",
+    displayName: "Keitaro OpenClaw Ops Backup",
+    checkoutDir: "openclaw-workspace-backup",
+    promptNote:
+      "Use the openclaw-ops-backup branch as the durable operations backup for Keitaro's OpenClaw environment. During the pilot, review issues and pull requests conservatively, do not propose auto-close decisions, do not autofix, do not automerge, and never write directly to VPS runtime paths.",
+    applyCloseRules: {
+      issue: [],
+      pull_request: [],
     },
   },
 ];
