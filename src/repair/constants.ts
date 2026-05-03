@@ -1,4 +1,4 @@
-export const DEFAULT_TARGET_REPO = "openclaw/openclaw";
+export const DEFAULT_TARGET_REPO = "Keitarooooo/openclaw-workspace-backup";
 export const DEFAULT_HEAD_PREFIX = "clawsweeper/";
 export const DEFAULT_LABEL = "clawsweeper";
 
