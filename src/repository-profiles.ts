@@ -30,12 +30,13 @@ const OPENCLAW_CLOSE_REASONS: readonly RepositoryCloseReason[] = [
   "stale_insufficient_info",
 ];
 
+export const OPENCLAW_TARGET_REPO = "openclaw/openclaw";
 export const KEITARO_OPENCLAW_OPS_TARGET_REPO = "Keitarooooo/openclaw-workspace-backup";
 export const DEFAULT_TARGET_REPO = KEITARO_OPENCLAW_OPS_TARGET_REPO;
 
 export const REPOSITORY_PROFILES: readonly RepositoryProfile[] = [
   {
-    targetRepo: DEFAULT_TARGET_REPO,
+    targetRepo: OPENCLAW_TARGET_REPO,
     slug: "openclaw-openclaw",
     displayName: "OpenClaw",
     checkoutDir: "openclaw",
