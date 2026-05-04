@@ -2222,6 +2222,26 @@ test("sweep workflow checks out the configured target branch", () => {
   assert.doesNotMatch(workflow, /--branch main/);
 });
 
+test("sweep workflow uses target read tokens for target repository checkout", () => {
+  const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
+  const checkoutBlocks = workflow
+    .split("- name: Check out target repository")
+    .slice(1)
+    .map((block) => block.split("\n      - ")[0]);
+
+  assert.equal(checkoutBlocks.length, 2);
+  for (const block of checkoutBlocks) {
+    assert.match(block, /GH_TOKEN: \$\{\{ .*steps\.target-read-token\.outputs\.token \}\}/);
+    assert.match(
+      block,
+      /git_auth=\(-c "http\.https:\/\/github\.com\/\.extraheader=AUTHORIZATION: bearer \$GH_TOKEN"\)/,
+    );
+    assert.match(block, /git "\$\{git_auth\[@\]\}" clone/);
+    assert.match(block, /git "\$\{git_auth\[@\]\}" -C "\$cache_dir" fetch/);
+    assert.doesNotMatch(block, /x-access-token/);
+  }
+});
+
 test("sweep review recovery uses explicit failed shard artifacts", () => {
   const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
 
