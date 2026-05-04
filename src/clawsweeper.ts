@@ -851,8 +851,8 @@ function markdownRepository(markdown: string, file?: string): string {
   return DEFAULT_TARGET_REPO;
 }
 
-function isMarkdownForActiveRepo(markdown: string, file?: string): boolean {
-  return markdownRepository(markdown, file) === targetRepo();
+export function isMarkdownForActiveRepo(markdown: string, file?: string): boolean {
+  return normalizeRepo(markdownRepository(markdown, file)) === normalizeRepo(targetRepo());
 }
 
 function evidenceEntry(options: Partial<Evidence> & Pick<Evidence, "label" | "detail">): Evidence {

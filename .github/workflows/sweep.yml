@@ -1096,6 +1096,11 @@ jobs:
             exit 0
           fi
           git pull --rebase
+          pnpm run apply-artifacts -- \
+            --target-repo "$TARGET_REPO" \
+            --artifact-dir artifacts \
+            --skip-dashboard \
+            --skip-reconcile
           pnpm run apply-decisions -- \
             --target-repo "$TARGET_REPO" \
             --skip-dashboard \
@@ -1105,7 +1110,7 @@ jobs:
             --limit 0 \
             --processed-limit 1000 \
             --max-runtime-ms 720000 \
-            --comment-sync-min-age-days 7 \
+            --comment-sync-min-age-days 0 \
             --progress-every 25
           synced_count="$(pnpm run --silent workflow -- count-actions --report apply-report.json --action review_comment_synced)"
           pnpm run status -- \

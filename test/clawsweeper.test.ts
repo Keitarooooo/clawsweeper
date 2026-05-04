@@ -16,6 +16,7 @@ import {
   formatRecentClosedRows,
   ghRetryKind,
   hotIntakeRecencyMs,
+  isMarkdownForActiveRepo,
   isCodexReviewCommentBody,
   isGitHubNotFoundError,
   isGitHubRequiresAuthenticationError,
@@ -2280,6 +2281,14 @@ test("review git info uses the checked out ref instead of hard-coded origin main
   assert.match(source, /Current checkout SHA:/);
 });
 
+test("review artifacts match the active repository regardless of owner casing", () => {
+  const markdown = reportFrontMatter({
+    repository: "keitarooooo/openclaw-workspace-backup",
+  });
+
+  assert.equal(isMarkdownForActiveRepo(markdown, "3.md"), true);
+});
+
 test("sweep publish steps use target tokens when reading target repository state", () => {
   const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
   const publishBlock = workflow.split("name: Publish review artifacts")[1];
@@ -2299,6 +2308,26 @@ test("sweep publish steps use target tokens when reading target repository state
   assert.match(commitBlock, /pnpm run reconcile -- --target-repo "\$TARGET_REPO"/);
   assert.doesNotMatch(applyBlock, /GH_TOKEN: \$\{\{ github\.token \}\}/);
   assert.doesNotMatch(commitBlock, /GH_TOKEN: \$\{\{ github\.token \}\}/);
+});
+
+test("selected review comment sync rehydrates artifacts before applying decisions", () => {
+  const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
+  const publishBlock = workflow.split("name: Publish review artifacts")[1];
+  const syncBlock = publishBlock
+    ?.split("- name: Sync selected review comments")[1]
+    ?.split("\n      - ")[0];
+
+  assert.ok(syncBlock);
+  assert.match(syncBlock, /pnpm run apply-artifacts --/);
+  assert.match(syncBlock, /--target-repo "\$TARGET_REPO"/);
+  assert.match(syncBlock, /--artifact-dir artifacts/);
+  assert.match(syncBlock, /--skip-dashboard/);
+  assert.match(syncBlock, /--skip-reconcile/);
+  assert.match(syncBlock, /--comment-sync-min-age-days 0/);
+  assert.ok(
+    syncBlock.indexOf("pnpm run apply-artifacts --") <
+      syncBlock.indexOf("pnpm run apply-decisions --"),
+  );
 });
 
 test("sweep review recovery uses explicit failed shard artifacts", () => {
