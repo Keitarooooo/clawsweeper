@@ -2272,6 +2272,27 @@ test("review git info uses the checked out ref instead of hard-coded origin main
   assert.match(source, /Current checkout SHA:/);
 });
 
+test("sweep publish steps use target tokens when reading target repository state", () => {
+  const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
+  const publishBlock = workflow.split("name: Publish review artifacts")[1];
+
+  assert.ok(publishBlock);
+  const applyBlock = publishBlock
+    .split("- name: Apply review artifacts")[1]
+    ?.split("\n      - ")[0];
+  const commitBlock = publishBlock
+    .split("- name: Commit review records")[1]
+    ?.split("\n      - ")[0];
+
+  assert.ok(applyBlock);
+  assert.ok(commitBlock);
+  assert.match(applyBlock, /GH_TOKEN: \$\{\{ steps\.target-write-token\.outputs\.token \}\}/);
+  assert.match(commitBlock, /GH_TOKEN: \$\{\{ steps\.target-write-token\.outputs\.token \}\}/);
+  assert.match(commitBlock, /pnpm run reconcile -- --target-repo "\$TARGET_REPO"/);
+  assert.doesNotMatch(applyBlock, /GH_TOKEN: \$\{\{ github\.token \}\}/);
+  assert.doesNotMatch(commitBlock, /GH_TOKEN: \$\{\{ github\.token \}\}/);
+});
+
 test("sweep review recovery uses explicit failed shard artifacts", () => {
   const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
 
