@@ -579,7 +579,7 @@ const STALE_INSUFFICIENT_INFO_MIN_AGE_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const RECENT_MISSING_OPEN_MS = DAY_MS;
 const DEFAULT_CODEX_MODEL = "gpt-5.5";
-const DEFAULT_REASONING_EFFORT = "high";
+const DEFAULT_REASONING_EFFORT = "medium";
 const DEFAULT_SERVICE_TIER = "fast";
 const REVIEW_POLICY_VERSION = "2026-04-29-policy-v12";
 const REVIEW_COMMENT_MARKER_PREFIX = "<!-- clawsweeper-review";
@@ -4904,6 +4904,7 @@ const PATCHABLE_REVIEW_COMMENT_AUTHORS = new Set(
   [
     "clawsweeper",
     "clawsweeper[bot]",
+    "clawsweeper-pilot[bot]",
     "openclaw-clawsweeper[bot]",
     process.env.CLAWSWEEPER_COMMENT_AUTHOR_LOGIN,
   ].filter((login): login is string => typeof login === "string" && login.length > 0),

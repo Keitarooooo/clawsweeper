@@ -1184,6 +1184,7 @@ test("comment matcher recognizes old and new Codex review comments", () => {
 test("review comment patching only targets ClawSweeper-owned comments", () => {
   assert.equal(canPatchReviewComment({ user: { login: "clawsweeper" } }), true);
   assert.equal(canPatchReviewComment({ user: { login: "clawsweeper[bot]" } }), true);
+  assert.equal(canPatchReviewComment({ user: { login: "clawsweeper-pilot[bot]" } }), true);
   assert.equal(canPatchReviewComment({ user: { login: "openclaw-clawsweeper[bot]" } }), true);
   assert.equal(canPatchReviewComment({ user: { login: "steipete" } }), false);
   assert.equal(canPatchReviewComment(undefined), false);
@@ -2171,16 +2172,23 @@ test("sweep target write tokens can merge pull requests", () => {
   }
 });
 
-test("sweep workflow uses the pilot cost-control Codex model", () => {
+test("sweep workflow uses the pilot cost-control Codex model and reasoning effort", () => {
   const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
   const modelFlags = workflow.match(/--codex-model gpt-[^\s\\]+/g) ?? [];
+  const reasoningFlags = workflow.match(/--codex-reasoning-effort [^\s\\]+/g) ?? [];
 
   assert.deepEqual(modelFlags, [
     "--codex-model gpt-5.4-mini",
     "--codex-model gpt-5.4-mini",
     "--codex-model gpt-5.4-mini",
   ]);
+  assert.deepEqual(reasoningFlags, [
+    "--codex-reasoning-effort medium",
+    "--codex-reasoning-effort medium",
+    "--codex-reasoning-effort medium",
+  ]);
   assert.doesNotMatch(workflow, /--codex-model gpt-5\.5/);
+  assert.doesNotMatch(workflow, /--codex-reasoning-effort high/);
 });
 
 test("sweep workflow stays within GitHub workflow_dispatch input limit", () => {
