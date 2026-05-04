@@ -2216,13 +2216,13 @@ test("sweep workflow checks out the configured target branch", () => {
   );
   assert.match(workflow, /target_ref="openclaw-ops-backup"/);
   assert.match(workflow, /echo "target_ref=\$target_ref"/);
-  assert.match(workflow, /target_ref="\$\{\{ needs\.plan\.outputs\.target_ref \}\}"/);
-  assert.match(workflow, /origin "\$target_ref"/);
-  assert.match(workflow, /--branch "\$target_ref"/);
+  assert.equal(workflow.match(/Invalid target_repo/g)?.length, 2);
+  assert.match(workflow, /ref: \$\{\{ steps\.target\.outputs\.target_ref \}\}/);
+  assert.match(workflow, /ref: \$\{\{ needs\.plan\.outputs\.target_ref \}\}/);
   assert.doesNotMatch(workflow, /--branch main/);
 });
 
-test("sweep workflow uses target read tokens for target repository checkout", () => {
+test("sweep workflow uses actions checkout with target read tokens for target repository checkout", () => {
   const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
   const checkoutBlocks = workflow
     .split("- name: Check out target repository")
@@ -2231,15 +2231,45 @@ test("sweep workflow uses target read tokens for target repository checkout", ()
 
   assert.equal(checkoutBlocks.length, 2);
   for (const block of checkoutBlocks) {
-    assert.match(block, /GH_TOKEN: \$\{\{ .*steps\.target-read-token\.outputs\.token \}\}/);
+    assert.match(block, /uses: actions\/checkout@v6/);
     assert.match(
       block,
-      /git_auth=\(-c "http\.https:\/\/github\.com\/\.extraheader=AUTHORIZATION: bearer \$GH_TOKEN"\)/,
+      /repository: \$\{\{ (steps\.target|needs\.plan)\.outputs\.target_repo \}\}/,
     );
-    assert.match(block, /git "\$\{git_auth\[@\]\}" clone/);
-    assert.match(block, /git "\$\{git_auth\[@\]\}" -C "\$cache_dir" fetch/);
+    assert.match(block, /ref: \$\{\{ (steps\.target|needs\.plan)\.outputs\.target_ref \}\}/);
+    assert.match(
+      block,
+      /path: \$\{\{ (steps\.target|needs\.plan)\.outputs\.target_checkout_dir \}\}/,
+    );
+    assert.match(block, /token: \$\{\{ steps\.target-read-token\.outputs\.token \}\}/);
+    assert.match(block, /filter: blob:none/);
+    assert.match(block, /fetch-depth: 0/);
+    assert.match(block, /persist-credentials: false/);
+    assert.doesNotMatch(block, /GH_TOKEN:/);
+    assert.doesNotMatch(block, /git clone/);
+    assert.doesNotMatch(block, /git fetch/);
     assert.doesNotMatch(block, /x-access-token/);
   }
+});
+
+test("sweep review commands use the checked out target repository directory", () => {
+  const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
+
+  assert.match(workflow, /--target-dir "\$\{\{ steps\.target\.outputs\.target_checkout_dir \}\}"/);
+  assert.match(
+    workflow,
+    /working-directory: clawsweeper[\s\S]*--target-dir "\.\.\/\$\{\{ needs\.plan\.outputs\.target_checkout_dir \}\}"/,
+  );
+  assert.doesNotMatch(workflow, /--target-dir "\.\.\/openclaw"/);
+});
+
+test("review git info uses the checked out ref instead of hard-coded origin main", () => {
+  const source = readFileSync("src/clawsweeper.ts", "utf8");
+
+  assert.match(source, /run\("git", \["rev-parse", "HEAD"\]/);
+  assert.doesNotMatch(source, /fetch", "origin", "main"/);
+  assert.doesNotMatch(source, /rev-parse", "origin\/main"/);
+  assert.match(source, /Current checkout SHA:/);
 });
 
 test("sweep review recovery uses explicit failed shard artifacts", () => {
