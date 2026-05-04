@@ -3093,8 +3093,7 @@ function collectItemContext(item: Item): ItemContext {
 }
 
 function gitInfo(openclawDir: string): GitInfo {
-  run("git", ["fetch", "origin", "main", "--depth=50"], { cwd: openclawDir });
-  const mainSha = run("git", ["rev-parse", "origin/main"], { cwd: openclawDir });
+  const mainSha = run("git", ["rev-parse", "HEAD"], { cwd: openclawDir });
   let latestRelease: LatestRelease | null = null;
   try {
     latestRelease = ghJson<LatestRelease>([
@@ -3145,7 +3144,7 @@ ${additionalPrompt.trim()}
 - Author association: ${item.authorAssociation}
 - Created at: ${item.createdAt}
 - Updated at: ${item.updatedAt}
-- Current main SHA: ${git.mainSha}
+- Current checkout SHA: ${git.mainSha}
 - Latest release: ${git.latestRelease?.tagName ?? "unknown"} (${git.latestRelease?.sha ?? "unknown sha"})
 
 ## GitHub Context

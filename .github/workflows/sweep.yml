@@ -282,38 +282,16 @@ jobs:
         with:
           login-status: "true"
 
-      - uses: actions/cache@v5
-        with:
-          path: ${{ steps.target.outputs.target_checkout_dir }}-cache.git
-          key: ${{ steps.target.outputs.target_repo_name }}-event-git-${{ runner.os }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ steps.target.outputs.target_repo_name }}-event-git-${{ runner.os }}-
-            ${{ steps.target.outputs.target_repo_name }}-git-${{ runner.os }}-
-
       - name: Check out target repository
-        env:
-          GH_TOKEN: ${{ steps.target-read-token.outputs.token }}
-        run: |
-          set -euo pipefail
-          url="https://github.com/${{ steps.target.outputs.target_repo }}.git"
-          cache_dir="${{ steps.target.outputs.target_checkout_dir }}-cache.git"
-          checkout_dir="${{ steps.target.outputs.target_checkout_dir }}"
-          target_ref="${{ steps.target.outputs.target_ref }}"
-          git_auth=(-c "http.https://github.com/.extraheader=AUTHORIZATION: bearer $GH_TOKEN")
-          if [ -d "$cache_dir" ]; then
-            git -C "$cache_dir" remote set-url origin "$url"
-            git -C "$cache_dir" config remote.origin.promisor true
-            git -C "$cache_dir" config remote.origin.partialclonefilter blob:none
-            if [ -f "$cache_dir/shallow" ]; then
-              git "${git_auth[@]}" -C "$cache_dir" fetch --prune --unshallow --filter=blob:none origin "$target_ref"
-            else
-              git "${git_auth[@]}" -C "$cache_dir" fetch --prune --filter=blob:none origin "$target_ref"
-            fi
-          else
-            git "${git_auth[@]}" clone --bare --filter=blob:none --single-branch --branch "$target_ref" "$url" "$cache_dir"
-          fi
-          git "${git_auth[@]}" clone --reference-if-able "$cache_dir" --dissociate --filter=blob:none --branch "$target_ref" --single-branch "$url" "$checkout_dir"
-          git -C "$checkout_dir" rev-parse --short HEAD
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ steps.target.outputs.target_repo }}
+          ref: ${{ steps.target.outputs.target_ref }}
+          path: ${{ steps.target.outputs.target_checkout_dir }}
+          token: ${{ steps.target-read-token.outputs.token }}
+          filter: blob:none
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Review exact event item
         id: review-exact-event-item
@@ -546,6 +524,10 @@ jobs:
                 target_repo="Keitarooooo/openclaw-workspace-backup"
                 ;;
             esac
+          fi
+          if ! printf '%s' "$target_repo" | grep -Eq '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'; then
+            echo "Invalid target_repo: $target_repo" >&2
+            exit 1
           fi
           if [ -z "$target_ref" ]; then
             case "$target_repo" in
@@ -796,37 +778,16 @@ jobs:
         with:
           login-status: "true"
 
-      - uses: actions/cache@v5
-        with:
-          path: ${{ needs.plan.outputs.target_checkout_dir }}-cache.git
-          key: ${{ needs.plan.outputs.target_repo_name }}-git-${{ runner.os }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ needs.plan.outputs.target_repo_name }}-git-${{ runner.os }}-
-
       - name: Check out target repository
-        env:
-          GH_TOKEN: ${{ steps.target-read-token.outputs.token }}
-        run: |
-          set -euo pipefail
-          url="https://github.com/${{ needs.plan.outputs.target_repo }}.git"
-          cache_dir="${{ needs.plan.outputs.target_checkout_dir }}-cache.git"
-          checkout_dir="${{ needs.plan.outputs.target_checkout_dir }}"
-          target_ref="${{ needs.plan.outputs.target_ref }}"
-          git_auth=(-c "http.https://github.com/.extraheader=AUTHORIZATION: bearer $GH_TOKEN")
-          if [ -d "$cache_dir" ]; then
-            git -C "$cache_dir" remote set-url origin "$url"
-            git -C "$cache_dir" config remote.origin.promisor true
-            git -C "$cache_dir" config remote.origin.partialclonefilter blob:none
-            if [ -f "$cache_dir/shallow" ]; then
-              git "${git_auth[@]}" -C "$cache_dir" fetch --prune --unshallow --filter=blob:none origin "$target_ref"
-            else
-              git "${git_auth[@]}" -C "$cache_dir" fetch --prune --filter=blob:none origin "$target_ref"
-            fi
-          else
-            git "${git_auth[@]}" clone --bare --filter=blob:none --single-branch --branch "$target_ref" "$url" "$cache_dir"
-          fi
-          git "${git_auth[@]}" clone --reference-if-able "$cache_dir" --dissociate --filter=blob:none --branch "$target_ref" --single-branch "$url" "$checkout_dir"
-          git -C "$checkout_dir" rev-parse --short HEAD
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ needs.plan.outputs.target_repo }}
+          ref: ${{ needs.plan.outputs.target_ref }}
+          path: ${{ needs.plan.outputs.target_checkout_dir }}
+          token: ${{ steps.target-read-token.outputs.token }}
+          filter: blob:none
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Mark shard start
         id: shard-start
