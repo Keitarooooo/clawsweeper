@@ -2183,10 +2183,38 @@ test("sweep workflow uses the pilot cost-control Codex model", () => {
   assert.doesNotMatch(workflow, /--codex-model gpt-5\.5/);
 });
 
+test("sweep workflow stays within GitHub workflow_dispatch input limit", () => {
+  const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
+  const inputsBlock = workflow.match(
+    /workflow_dispatch:\n    inputs:\n(?<inputs>[\s\S]*?)permissions:/,
+  )?.groups?.inputs;
+
+  assert.ok(inputsBlock);
+  const inputNames = [...inputsBlock.matchAll(/^      ([A-Za-z0-9_]+):$/gm)].map(
+    (match) => match[1],
+  );
+
+  assert.equal(new Set(inputNames).size, inputNames.length);
+  assert.ok(
+    inputNames.length <= 25,
+    `workflow_dispatch defines ${inputNames.length} inputs: ${inputNames.join(", ")}`,
+  );
+});
+
 test("sweep workflow checks out the configured target branch", () => {
   const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
 
-  assert.match(workflow, /target_ref:\n\s+description: "Branch or ref to sweep"/);
+  const workflowDispatchInputs = workflow.match(
+    /workflow_dispatch:\n    inputs:\n(?<inputs>[\s\S]*?)permissions:/,
+  )?.groups?.inputs;
+
+  assert.ok(workflowDispatchInputs);
+  assert.doesNotMatch(workflowDispatchInputs, /^      target_ref:/m);
+  assert.match(
+    workflow,
+    /target_ref="\$\{\{ github\.event\.client_payload\.target_ref \|\| '' \}\}"/,
+  );
+  assert.match(workflow, /target_ref="openclaw-ops-backup"/);
   assert.match(workflow, /echo "target_ref=\$target_ref"/);
   assert.match(workflow, /target_ref="\$\{\{ needs\.plan\.outputs\.target_ref \}\}"/);
   assert.match(workflow, /origin "\$target_ref"/);
