@@ -2183,6 +2183,17 @@ test("sweep workflow uses the pilot cost-control Codex model", () => {
   assert.doesNotMatch(workflow, /--codex-model gpt-5\.5/);
 });
 
+test("sweep workflow checks out the configured target branch", () => {
+  const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
+
+  assert.match(workflow, /target_ref:\n\s+description: "Branch or ref to sweep"/);
+  assert.match(workflow, /echo "target_ref=\$target_ref"/);
+  assert.match(workflow, /target_ref="\$\{\{ needs\.plan\.outputs\.target_ref \}\}"/);
+  assert.match(workflow, /origin "\$target_ref"/);
+  assert.match(workflow, /--branch "\$target_ref"/);
+  assert.doesNotMatch(workflow, /--branch main/);
+});
+
 test("sweep review recovery uses explicit failed shard artifacts", () => {
   const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
 
