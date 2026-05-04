@@ -2171,6 +2171,18 @@ test("sweep target write tokens can merge pull requests", () => {
   }
 });
 
+test("sweep workflow uses the pilot cost-control Codex model", () => {
+  const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
+  const modelFlags = workflow.match(/--codex-model gpt-[^\s\\]+/g) ?? [];
+
+  assert.deepEqual(modelFlags, [
+    "--codex-model gpt-5.4-mini",
+    "--codex-model gpt-5.4-mini",
+    "--codex-model gpt-5.4-mini",
+  ]);
+  assert.doesNotMatch(workflow, /--codex-model gpt-5\.5/);
+});
+
 test("sweep review recovery uses explicit failed shard artifacts", () => {
   const workflow = readFileSync(".github/workflows/sweep.yml", "utf8");
 

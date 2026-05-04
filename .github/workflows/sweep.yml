@@ -314,7 +314,7 @@ jobs:
             --artifact-dir artifacts/event \
             --batch-size 1 \
             --max-pages 1 \
-            --codex-model gpt-5.5 \
+            --codex-model gpt-5.4-mini \
             --codex-reasoning-effort high \
             --codex-sandbox danger-full-access \
             --codex-service-tier fast \
@@ -673,7 +673,7 @@ jobs:
             --batch-size "$BATCH_SIZE" \
             --max-pages "$MAX_PAGES" \
             --shard-count "$SHARD_COUNT" \
-            --codex-model gpt-5.5 \
+            --codex-model gpt-5.4-mini \
             --codex-reasoning-effort high \
             --codex-sandbox danger-full-access \
             --codex-service-tier fast \
@@ -822,7 +822,7 @@ jobs:
             --artifact-dir ../review-artifacts/shard-${{ matrix.shard }} \
             --batch-size ${{ needs.plan.outputs.batch_size }} \
             --max-pages ${{ needs.plan.outputs.max_pages }} \
-            --codex-model gpt-5.5 \
+            --codex-model gpt-5.4-mini \
             --codex-reasoning-effort high \
             --codex-sandbox danger-full-access \
             --codex-service-tier fast \
