@@ -2375,21 +2375,33 @@ test("audit health section summarizes strict status and actionable findings", ()
   const section = auditHealthSection(result);
 
   assert.match(section, /### Audit Health/);
-  assert.match(section, /<!-- clawsweeper-audit:openclaw-openclaw:start -->/);
+  assert.match(section, /<!-- clawsweeper-audit:keitarooooo-openclaw-workspace-backup:start -->/);
   assert.match(
     section,
-    /Repository: \[openclaw\/openclaw\]\(https:\/\/github\.com\/openclaw\/openclaw\)/,
+    /Repository: \[Keitarooooo\/openclaw-workspace-backup\]\(https:\/\/github\.com\/keitarooooo\/openclaw-workspace-backup\)/,
   );
   assert.match(section, /Status: \*\*Action needed\*\*/);
   assert.match(section, /Targeted review input: `10,11,14`/);
   assert.match(section, /\| Missing eligible open records \| 1 \|/);
-  assert.match(section, /\[#10\]\(https:\/\/github\.com\/openclaw\/openclaw\/issues\/10\)/);
+  assert.match(
+    section,
+    /\[#10\]\(https:\/\/github\.com\/keitarooooo\/openclaw-workspace-backup\/issues\/10\)/,
+  );
   assert.match(section, /Missing eligible open/);
-  assert.match(section, /\[#13\]\(https:\/\/github\.com\/openclaw\/openclaw\/issues\/13\)/);
+  assert.match(
+    section,
+    /\[#13\]\(https:\/\/github\.com\/keitarooooo\/openclaw-workspace-backup\/issues\/13\)/,
+  );
   assert.match(section, /Protected proposed close/);
-  assert.match(section, /\[#11\]\(https:\/\/github\.com\/openclaw\/openclaw\/issues\/11\)/);
+  assert.match(
+    section,
+    /\[#11\]\(https:\/\/github\.com\/keitarooooo\/openclaw-workspace-backup\/issues\/11\)/,
+  );
   assert.match(section, /Open archived/);
-  assert.doesNotMatch(section, /\[#12\]\(https:\/\/github\.com\/openclaw\/openclaw\/issues\/12\)/);
+  assert.doesNotMatch(
+    section,
+    /\[#12\]\(https:\/\/github\.com\/keitarooooo\/openclaw-workspace-backup\/issues\/12\)/,
+  );
 });
 
 test("audit defers stale item drift until the open scan is complete", () => {
